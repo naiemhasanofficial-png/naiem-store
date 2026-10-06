@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Naiem Store — ভালুকার মধ্যে ফ্রি ডেলিভারি সহ অনলাইন শপ।">
+  <title>Naiem Store | Premium Online Shop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="container nav">
+    <a class="brand" href="#home"><span>NS</span> Naiem Store</a>
+    <nav>
+      <a href="#home">হোম</a>
+      <a href="#products">পণ্য</a>
+      <a href="#about">আমাদের সম্পর্কে</a>
+      <a href="#contact">যোগাযোগ</a>
+    </nav>
+    <button class="cart-btn" onclick="openCart()">🛒 কার্ট <b id="cartCount">0</b></button>
+  </div>
+</header>
+
+<main>
+<section id="home" class="hero">
+  <div class="container hero-grid">
+    <div>
+      <p class="eyebrow">WELCOME TO NAIEM STORE</p>
+      <h1>আপনার পছন্দের পণ্য,<br><em>আরও সহজে।</em></h1>
+      <p class="hero-copy">ভালুকার জন্য সহজ, নিরাপদ ও ঝামেলাহীন অনলাইন শপিং। পছন্দ করুন, অর্ডার করুন—বাকিটা আমরা সামলাব।</p>
+      <div class="hero-actions">
+        <a class="btn primary" href="#products">শপিং শুরু করুন →</a>
+        <a class="btn ghost" href="#delivery">🚚 ডেলিভারি দেখুন</a>
+      </div>
+      <div class="trust">
+        <span>✓ COD</span><span>✓ সহজ অর্ডার</span><span>✓ ভালুকায় FREE Delivery</span>
+      </div>
+    </div>
+    <div class="hero-card">
+      <div class="hero-card-inner">
+        <span class="mini-label">LOCAL DELIVERY</span>
+        <div class="big-icon">🚚</div>
+        <h3>ভালুকার মধ্যে</h3>
+        <strong>FREE DELIVERY</strong>
+        <p>আপনার ঠিকানায় পণ্য পৌঁছে যাবে।</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="strip">
+  <div class="container strip-grid">
+    <div>🚚 <b>ফ্রি ডেলিভারি</b><small>ভালুকার ভিতরে</small></div>
+    <div>💵 <b>Cash on Delivery</b><small>পণ্য হাতে পেয়ে পেমেন্ট</small></div>
+    <div>📲 <b>WhatsApp Order</b><small>সহজে অর্ডার করুন</small></div>
+    <div>⭐ <b>বিশ্বস্ত সেবা</b><small>লোকাল শপিং, সহজ সমাধান</small></div>
+  </div>
+</section>
+
+<section id="products" class="section">
+  <div class="container">
+    <div class="section-head">
+      <div><p class="eyebrow">OUR COLLECTION</p><h2>জনপ্রিয় পণ্য</h2></div>
+      <div class="filters">
+        <input id="search" oninput="renderProducts()" placeholder="🔎 পণ্য খুঁজুন..." aria-label="পণ্য খুঁজুন">
+        <select id="category" onchange="renderProducts()" aria-label="ক্যাটাগরি">
+          <option value="all">সব পণ্য</option>
+          <option value="featured">Featured</option>
+        </select>
+      </div>
+    </div>
+    <div id="productGrid" class="product-grid"></div>
+  </div>
+</section>
+
+<section id="delivery" class="delivery section">
+  <div class="container delivery-box">
+    <div><p class="eyebrow">DELIVERY POLICY</p><h2>ভালুকায় ডেলিভারি একদম FREE</h2><p>ভালুকা এলাকার অর্ডারে কোনো ডেলিভারি চার্জ নেই। ভালুকার বাইরে অর্ডার করলে কুরিয়ার/ডেলিভারি চার্জ প্রযোজ্য হতে পারে। অর্ডার কনফার্ম করার আগে চার্জ জানিয়ে দেওয়া হবে।</p></div>
+    <div class="delivery-badge">FREE<br><small>DELIVERY</small></div>
+  </div>
+</section>
+
+<section id="about" class="section light">
+  <div class="container two-col">
+    <div><p class="eyebrow">ABOUT US</p><h2>Naiem Store</h2><p>Naiem Store হলো ভালুকাভিত্তিক একটি সহজ অনলাইন শপ। আমাদের লক্ষ্য হলো পছন্দের পণ্য সহজে অর্ডার করার সুযোগ দেওয়া এবং স্থানীয় ক্রেতাদের জন্য দ্রুত ডেলিভারি নিশ্চিত করা।</p></div>
+    <div class="info-card"><h3>কেন আমাদের থেকে?</h3><p>✓ সহজ অর্ডার</p><p>✓ Cash on Delivery</p><p>✓ ভালুকায় Free Delivery</p><p>✓ WhatsApp-এ সরাসরি যোগাযোগ</p></div>
+  </div>
+</section>
+
+<section id="contact" class="section">
+  <div class="container contact">
+    <div><p class="eyebrow">CONTACT</p><h2>অর্ডার বা জানতে যোগাযোগ করুন</h2><p>পণ্য সম্পর্কে জানতে বা অর্ডার করতে WhatsApp-এ মেসেজ করুন।</p></div>
+    <a class="btn whatsapp" id="contactWhatsApp" href="#" target="_blank">💬 WhatsApp করুন</a>
+  </div>
+</section>
+</main>
+
+<footer><div class="container footer"><div><strong>Naiem Store</strong><p>ভালুকা, ময়মনসিংহ</p></div><p>© <span id="year"></span> Naiem Store. All rights reserved.</p></div></footer>
+
+<div id="cartModal" class="modal" onclick="if(event.target===this)closeCart()">
+  <div class="cart-panel">
+    <button class="close" onclick="closeCart()">×</button>
+    <p class="eyebrow">YOUR CART</p><h2>আপনার কার্ট</h2>
+    <div id="cartItems"></div>
+    <div class="cart-total"><span>মোট</span><strong id="cartTotal">৳0</strong></div>
+    <button class="btn primary full" onclick="checkout()">📲 WhatsApp-এ অর্ডার করুন</button>
+    <p class="small">অর্ডার পাঠানোর আগে আপনার নাম, ফোন ও ঠিকানা WhatsApp-এ লিখে দিন।</p>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
