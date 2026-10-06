@@ -1,72 +1,536 @@
-// ====== NAIEM STORE SETTINGS ======
-// Replace the number below with your WhatsApp number, country code included.
-// Bangladesh example: 8801XXXXXXXXX (do not use + or spaces).
+// ===============================
+// NAIEM STORE - SCRIPT.JS
+// ===============================
+
+// আপনার WhatsApp নম্বর
 const WHATSAPP_NUMBER = "8801632189981";
 
-const products = [
-  {id:1,name:"Premium Product One",price:499,oldPrice:650,emoji:"🛍️",badge:"NEW",desc:"ডেমো পণ্য — আপনার আসল পণ্যের তথ্য দিয়ে বদলে দিন।"},
-  {id:2,name:"Premium Product Two",price:799,oldPrice:950,emoji:"🎁",badge:"SALE",desc:"ডেমো পণ্য — ছবি, নাম ও দাম পরে পরিবর্তন করতে পারবেন।"},
-  {id:3,name:"Premium Product Three",price:999,oldPrice:null,emoji:"✨",badge:"POPULAR",desc:"ডেমো পণ্য — আপনার আসল পণ্য এখানে যোগ হবে।"},
-  {id:4,name:"Premium Product Four",price:1299,oldPrice:1499,emoji:"⭐",badge:"HOT",desc:"ডেমো পণ্য — আপনার দোকানের জন্য প্রস্তুত।"}
-];
+// ==========================================
+// PRODUCTS
+// এখন কোনো Demo Product নেই
+// পরে এখানেই আপনার আসল পণ্য যোগ হবে
+// ==========================================
 
-let cart = JSON.parse(localStorage.getItem("naiemCart") || "[]");
+const products = [];
 
-function money(n){ return "৳" + Number(n).toLocaleString("bn-BD"); }
+// ==========================================
+// CART
+// ==========================================
 
-function renderProducts(){
-  const q = document.getElementById("search").value.trim().toLowerCase();
-  const list = products.filter(p => p.name.toLowerCase().includes(q));
-  const grid = document.getElementById("productGrid");
-  grid.innerHTML = list.length ? list.map(p => `
-    <article class="product">
-      <div class="product-img"><span class="badge">${p.badge}</span><span>${p.emoji}</span></div>
-      <div class="product-body">
-        <h3>${p.name}</h3>
-        <p>${p.desc}</p>
-        <div><span class="price">${money(p.price)}</span>${p.oldPrice ? `<span class="old">${money(p.oldPrice)}</span>`:""}</div>
-        <button class="btn primary add" onclick="addToCart(${p.id})">🛒 কার্টে যোগ করুন</button>
+let cart = JSON.parse(localStorage.getItem("naiemStoreCart")) || [];
+
+// পুরোনো Demo Product থাকলে Cart থেকে সরিয়ে দেওয়া হবে
+cart = cart.filter(item =>
+  products.some(product => product.id === item.id)
+);
+
+localStorage.setItem("naiemStoreCart", JSON.stringify(cart));
+
+
+// ==========================================
+// ELEMENTS
+// ==========================================
+
+const productGrid = document.getElementById("productGrid");
+const cartItems = document.getElementById("cartItems");
+const cartCount = document.getElementById("cartCount");
+const cartTotal = document.getElementById("cartTotal");
+const searchInput = document.getElementById("searchInput");
+const categoryFilter = document.getElementById("categoryFilter");
+
+
+// ==========================================
+// DISPLAY PRODUCTS
+// ==========================================
+
+function displayProducts(productList = products) {
+
+  if (!productGrid) return;
+
+  // কোনো Product না থাকলে
+  if (productList.length === 0) {
+
+    productGrid.innerHTML = `
+      <div class="empty-products">
+        <div class="empty-icon">🛍️</div>
+        <h3>এখনো কোনো পণ্য যোগ করা হয়নি</h3>
+        <p>
+          খুব শীঘ্রই আমাদের নতুন নতুন পণ্য এখানে যোগ করা হবে।
+        </p>
       </div>
-    </article>`).join("") : "<p>কোনো পণ্য পাওয়া যায়নি।</p>";
-}
+    `;
 
-function save(){localStorage.setItem("naiemCart",JSON.stringify(cart)); updateCartCount();}
-function addToCart(id){
-  const found=cart.find(x=>x.id===id);
-  if(found) found.qty++;
-  else cart.push({id,qty:1});
-  save(); openCart();
-}
-function changeQty(id,delta){
-  const item=cart.find(x=>x.id===id);
-  if(!item)return;
-  item.qty+=delta;
-  if(item.qty<=0)cart=cart.filter(x=>x.id!==id);
-  save(); renderCart();
-}
-function renderCart(){
-  const box=document.getElementById("cartItems");
-  if(!cart.length){box.innerHTML="<p>আপনার কার্ট এখনো খালি। 🛒</p>";document.getElementById("cartTotal").textContent="৳0";return;}
-  let total=0;
-  box.innerHTML=cart.map(item=>{
-    const p=products.find(x=>x.id===item.id); const subtotal=p.price*item.qty; total+=subtotal;
-    return `<div class="cart-line"><div><b>${p.name}</b><br><span>${money(p.price)} × ${item.qty}</span></div><div class="qty"><button onclick="changeQty(${p.id},-1)">−</button> ${item.qty} <button onclick="changeQty(${p.id},1)">+</button><br><b>${money(subtotal)}</b></div></div>`;
+    return;
+  }
+
+  productGrid.innerHTML = productList.map(product => {
+
+    return `
+      <div class="product-card">
+
+        <div class="product-image">
+
+          ${product.badge ? `
+            <span class="product-badge">
+              ${product.badge}
+            </span>
+          ` : ""}
+
+          ${
+            product.image
+              ? `<img src="${product.image}" alt="${product.name}">`
+              : `<div class="product-placeholder">${product.emoji || "🛍️"}</div>`
+          }
+
+        </div>
+
+        <div class="product-info">
+
+          <h3>${product.name}</h3>
+
+          ${
+            product.desc
+              ? `<p class="product-description">${product.desc}</p>`
+              : ""
+          }
+
+          <div class="product-price">
+
+            <span class="current-price">
+              ৳${Number(product.price).toLocaleString("en-BD")}
+            </span>
+
+            ${
+              product.oldPrice
+                ? `
+                  <span class="old-price">
+                    ৳${Number(product.oldPrice).toLocaleString("en-BD")}
+                  </span>
+                `
+                : ""
+            }
+
+          </div>
+
+          <button
+            class="add-to-cart-btn"
+            onclick="addToCart(${product.id})"
+          >
+            🛒 কার্টে যোগ করুন
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
   }).join("");
-  document.getElementById("cartTotal").textContent=money(total);
-}
-function updateCartCount(){document.getElementById("cartCount").textContent=cart.reduce((a,b)=>a+b.qty,0);}
-function openCart(){renderCart();document.getElementById("cartModal").classList.add("show");}
-function closeCart(){document.getElementById("cartModal").classList.remove("show");}
-
-function checkout(){
-  if(!cart.length){alert("কার্ট খালি।");return;}
-  let total=0, lines=["🛒 *Naiem Store — New Order*",""];
-  cart.forEach(item=>{const p=products.find(x=>x.id===item.id);const s=p.price*item.qty;total+=s;lines.push(`• ${p.name} × ${item.qty} = ${money(s)}`);});
-  lines.push("",`💰 *মোট: ${money(total)}*`,"🚚 ভালুকার মধ্যে: FREE DELIVERY","", "👤 নাম: ", "📞 ফোন: ", "📍 ঠিকানা: ");
-  const url=`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(lines.join("\n"))}`;
-  window.open(url,"_blank");
 }
 
-document.getElementById("contactWhatsApp").href=`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("আসসালামু আলাইকুম, Naiem Store সম্পর্কে জানতে চাই।")}`;
-document.getElementById("year").textContent=new Date().getFullYear();
-renderProducts(); updateCartCount();
+
+// ==========================================
+// ADD TO CART
+// ==========================================
+
+function addToCart(productId) {
+
+  const product = products.find(
+    item => item.id === productId
+  );
+
+  if (!product) return;
+
+  const existingItem = cart.find(
+    item => item.id === productId
+  );
+
+  if (existingItem) {
+
+    existingItem.quantity += 1;
+
+  } else {
+
+    cart.push({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: 1
+    });
+
+  }
+
+  saveCart();
+
+  alert(`${product.name} কার্টে যোগ করা হয়েছে।`);
+}
+
+
+// ==========================================
+// REMOVE FROM CART
+// ==========================================
+
+function removeFromCart(productId) {
+
+  cart = cart.filter(
+    item => item.id !== productId
+  );
+
+  saveCart();
+}
+
+
+// ==========================================
+// CHANGE QUANTITY
+// ==========================================
+
+function changeQuantity(productId, change) {
+
+  const item = cart.find(
+    item => item.id === productId
+  );
+
+  if (!item) return;
+
+  item.quantity += change;
+
+  if (item.quantity <= 0) {
+
+    cart = cart.filter(
+      item => item.id !== productId
+    );
+
+  }
+
+  saveCart();
+}
+
+
+// ==========================================
+// SAVE CART
+// ==========================================
+
+function saveCart() {
+
+  localStorage.setItem(
+    "naiemStoreCart",
+    JSON.stringify(cart)
+  );
+
+  displayCart();
+}
+
+
+// ==========================================
+// DISPLAY CART
+// ==========================================
+
+function displayCart() {
+
+  if (!cartItems) return;
+
+  // Cart খালি
+  if (cart.length === 0) {
+
+    cartItems.innerHTML = `
+      <div class="empty-cart">
+
+        <div class="empty-cart-icon">🛒</div>
+
+        <h3>আপনার Cart খালি</h3>
+
+        <p>
+          পণ্য যোগ করলে এখানে দেখা যাবে।
+        </p>
+
+      </div>
+    `;
+
+    if (cartCount) {
+      cartCount.textContent = "0";
+    }
+
+    if (cartTotal) {
+      cartTotal.textContent = "৳0";
+    }
+
+    return;
+  }
+
+
+  let total = 0;
+  let totalQuantity = 0;
+
+
+  cartItems.innerHTML = cart.map(item => {
+
+    const itemTotal =
+      Number(item.price) * Number(item.quantity);
+
+    total += itemTotal;
+    totalQuantity += Number(item.quantity);
+
+
+    return `
+      <div class="cart-item">
+
+        <div class="cart-item-info">
+
+          <h4>${item.name}</h4>
+
+          <p>
+            ৳${Number(item.price).toLocaleString("en-BD")}
+            × ${item.quantity}
+          </p>
+
+        </div>
+
+
+        <div class="cart-item-actions">
+
+          <button
+            onclick="changeQuantity(${item.id}, -1)"
+          >
+            −
+          </button>
+
+          <span>
+            ${item.quantity}
+          </span>
+
+          <button
+            onclick="changeQuantity(${item.id}, 1)"
+          >
+            +
+          </button>
+
+          <button
+            class="remove-cart-item"
+            onclick="removeFromCart(${item.id})"
+          >
+            ✕
+          </button>
+
+        </div>
+
+        <div class="cart-item-total">
+
+          ৳${itemTotal.toLocaleString("en-BD")}
+
+        </div>
+
+      </div>
+    `;
+
+  }).join("");
+
+
+  if (cartCount) {
+    cartCount.textContent = totalQuantity;
+  }
+
+  if (cartTotal) {
+    cartTotal.textContent =
+      `৳${total.toLocaleString("en-BD")}`;
+  }
+}
+
+
+// ==========================================
+// WHATSAPP ORDER
+// ==========================================
+
+function orderViaWhatsApp() {
+
+  // Cart খালি হলে WhatsApp খুলবে না
+  if (cart.length === 0) {
+
+    alert(
+      "আপনার Cart এখনো খালি। আগে কোনো পণ্য Cart-এ যোগ করুন।"
+    );
+
+    return;
+  }
+
+
+  let message =
+    "🛍️ *Naiem Store - New Order*%0A%0A";
+
+
+  message += "📦 *Products:*%0A";
+
+
+  let total = 0;
+
+
+  cart.forEach((item, index) => {
+
+    const itemTotal =
+      Number(item.price) * Number(item.quantity);
+
+    total += itemTotal;
+
+
+    message +=
+      `${index + 1}. ${item.name}%0A` +
+      `   Quantity: ${item.quantity}%0A` +
+      `   Price: ৳${Number(item.price).toLocaleString("en-BD")}%0A` +
+      `   Subtotal: ৳${itemTotal.toLocaleString("en-BD")}%0A%0A`;
+
+  });
+
+
+  message +=
+    `💰 *Total: ৳${total.toLocaleString("en-BD")}*%0A%0A`;
+
+  message +=
+    "🚚 Delivery: ভালুকার মধ্যে FREE DELIVERY%0A";
+
+  message +=
+    "📍 ভালুকার বাইরে Delivery Charge প্রযোজ্য।%0A%0A";
+
+
+  message +=
+    "👤 *Customer Information:*%0A";
+
+  message +=
+    "Name: %0A";
+
+  message +=
+    "Phone: %0A";
+
+  message +=
+    "Address: %0A%0A";
+
+  message +=
+    "💵 Payment: Cash on Delivery";
+
+
+  const whatsappURL =
+    `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
+
+
+  window.open(
+    whatsappURL,
+    "_blank"
+  );
+}
+
+
+// ==========================================
+// SEARCH
+// ==========================================
+
+function searchProducts() {
+
+  if (!searchInput) return;
+
+  const searchTerm =
+    searchInput.value
+      .toLowerCase()
+      .trim();
+
+
+  const filteredProducts =
+    products.filter(product => {
+
+      const name =
+        product.name
+          .toLowerCase();
+
+      const description =
+        (product.desc || "")
+          .toLowerCase();
+
+
+      return (
+        name.includes(searchTerm) ||
+        description.includes(searchTerm)
+      );
+
+    });
+
+
+  displayProducts(filteredProducts);
+}
+
+
+// ==========================================
+// CATEGORY FILTER
+// ==========================================
+
+function filterProducts() {
+
+  if (!categoryFilter) return;
+
+  const category =
+    categoryFilter.value;
+
+
+  if (
+    !category ||
+    category === "all"
+  ) {
+
+    displayProducts(products);
+
+    return;
+  }
+
+
+  const filteredProducts =
+    products.filter(
+      product =>
+        product.category === category
+    );
+
+
+  displayProducts(filteredProducts);
+}
+
+
+// ==========================================
+// SEARCH EVENT
+// ==========================================
+
+if (searchInput) {
+
+  searchInput.addEventListener(
+    "input",
+    searchProducts
+  );
+
+}
+
+
+// ==========================================
+// CATEGORY EVENT
+// ==========================================
+
+if (categoryFilter) {
+
+  categoryFilter.addEventListener(
+    "change",
+    filterProducts
+  );
+
+}
+
+
+// ==========================================
+// INITIAL LOAD
+// ==========================================
+
+displayProducts();
+displayCart();
+
+
+// ==========================================
+// MAKE FUNCTIONS AVAILABLE
+// ==========================================
+
+window.addToCart = addToCart;
+window.removeFromCart = removeFromCart;
+window.changeQuantity = changeQuantity;
+window.orderViaWhatsApp = orderViaWhatsApp;
+window.searchProducts = searchProducts;
+window.filterProducts = filterProducts;
