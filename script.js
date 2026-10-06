@@ -1,536 +1,811 @@
-// ===============================
-// NAIEM STORE - SCRIPT.JS
-// ===============================
+// =====================================================
+// NAIEM STORE — PRODUCT & CART SYSTEM
+// =====================================================
 
 // আপনার WhatsApp নম্বর
+// Bangladesh format: 8801XXXXXXXXX
+// + বা space ব্যবহার করবেন না।
 const WHATSAPP_NUMBER = "8801632189981";
 
-// ==========================================
+
+// =====================================================
 // PRODUCTS
-// এখন কোনো Demo Product নেই
-// পরে এখানেই আপনার আসল পণ্য যোগ হবে
-// ==========================================
+// =====================================================
+//
+// এখন কোনো Demo Product রাখা হয়নি।
+// তাই website-এ বর্তমানে কোনো product দেখাবে না।
+//
+// পরে আপনার আসল product এখানে যোগ করবেন।
+//
+// Example:
+//
+// {
+//   id: 1,
+//   name: "আপনার পণ্যের নাম",
+//   price: 1200,
+//   oldPrice: 1500,
+//   emoji: "🛍️",
+//   badge: "NEW",
+//   desc: "পণ্যের সংক্ষিপ্ত বর্ণনা"
+// }
+//
+// =====================================================
 
 const products = [];
 
-// ==========================================
+
+// =====================================================
 // CART
-// ==========================================
+// =====================================================
 
-let cart = JSON.parse(localStorage.getItem("naiemStoreCart")) || [];
+// পুরোনো localStorage cart পরিষ্কার করা হচ্ছে
+// যাতে আগের Demo Product আর দেখা না যায়।
 
-// পুরোনো Demo Product থাকলে Cart থেকে সরিয়ে দেওয়া হবে
-cart = cart.filter(item =>
-  products.some(product => product.id === item.id)
-);
+let cart = [];
 
-localStorage.setItem("naiemStoreCart", JSON.stringify(cart));
+try {
 
-
-// ==========================================
-// ELEMENTS
-// ==========================================
-
-const productGrid = document.getElementById("productGrid");
-const cartItems = document.getElementById("cartItems");
-const cartCount = document.getElementById("cartCount");
-const cartTotal = document.getElementById("cartTotal");
-const searchInput = document.getElementById("searchInput");
-const categoryFilter = document.getElementById("categoryFilter");
-
-
-// ==========================================
-// DISPLAY PRODUCTS
-// ==========================================
-
-function displayProducts(productList = products) {
-
-  if (!productGrid) return;
-
-  // কোনো Product না থাকলে
-  if (productList.length === 0) {
-
-    productGrid.innerHTML = `
-      <div class="empty-products">
-        <div class="empty-icon">🛍️</div>
-        <h3>এখনো কোনো পণ্য যোগ করা হয়নি</h3>
-        <p>
-          খুব শীঘ্রই আমাদের নতুন নতুন পণ্য এখানে যোগ করা হবে।
-        </p>
-      </div>
-    `;
-
-    return;
-  }
-
-  productGrid.innerHTML = productList.map(product => {
-
-    return `
-      <div class="product-card">
-
-        <div class="product-image">
-
-          ${product.badge ? `
-            <span class="product-badge">
-              ${product.badge}
-            </span>
-          ` : ""}
-
-          ${
-            product.image
-              ? `<img src="${product.image}" alt="${product.name}">`
-              : `<div class="product-placeholder">${product.emoji || "🛍️"}</div>`
-          }
-
-        </div>
-
-        <div class="product-info">
-
-          <h3>${product.name}</h3>
-
-          ${
-            product.desc
-              ? `<p class="product-description">${product.desc}</p>`
-              : ""
-          }
-
-          <div class="product-price">
-
-            <span class="current-price">
-              ৳${Number(product.price).toLocaleString("en-BD")}
-            </span>
-
-            ${
-              product.oldPrice
-                ? `
-                  <span class="old-price">
-                    ৳${Number(product.oldPrice).toLocaleString("en-BD")}
-                  </span>
-                `
-                : ""
-            }
-
-          </div>
-
-          <button
-            class="add-to-cart-btn"
-            onclick="addToCart(${product.id})"
-          >
-            🛒 কার্টে যোগ করুন
-          </button>
-
-        </div>
-
-      </div>
-    `;
-
-  }).join("");
-}
-
-
-// ==========================================
-// ADD TO CART
-// ==========================================
-
-function addToCart(productId) {
-
-  const product = products.find(
-    item => item.id === productId
-  );
-
-  if (!product) return;
-
-  const existingItem = cart.find(
-    item => item.id === productId
-  );
-
-  if (existingItem) {
-
-    existingItem.quantity += 1;
-
-  } else {
-
-    cart.push({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      quantity: 1
-    });
-
-  }
-
-  saveCart();
-
-  alert(`${product.name} কার্টে যোগ করা হয়েছে।`);
-}
-
-
-// ==========================================
-// REMOVE FROM CART
-// ==========================================
-
-function removeFromCart(productId) {
-
-  cart = cart.filter(
-    item => item.id !== productId
-  );
-
-  saveCart();
-}
-
-
-// ==========================================
-// CHANGE QUANTITY
-// ==========================================
-
-function changeQuantity(productId, change) {
-
-  const item = cart.find(
-    item => item.id === productId
-  );
-
-  if (!item) return;
-
-  item.quantity += change;
-
-  if (item.quantity <= 0) {
-
-    cart = cart.filter(
-      item => item.id !== productId
+    const oldCart = JSON.parse(
+        localStorage.getItem("naiemCart") || "[]"
     );
 
-  }
+    if (Array.isArray(oldCart)) {
 
-  saveCart();
+        // শুধু বর্তমানে থাকা product-এর cart item রাখবে
+        cart = oldCart.filter(item =>
+            products.some(product => product.id === item.id)
+        );
+
+    }
+
+} catch (error) {
+
+    cart = [];
+
 }
 
 
-// ==========================================
+// নতুন clean cart save
+localStorage.setItem(
+    "naiemCart",
+    JSON.stringify(cart)
+);
+
+
+// =====================================================
+// MONEY FORMAT
+// =====================================================
+
+function money(amount) {
+
+    return "৳" + Number(amount).toLocaleString("bn-BD");
+
+}
+
+
+// =====================================================
+// RENDER PRODUCTS
+// =====================================================
+
+function renderProducts() {
+
+    const searchElement =
+        document.getElementById("search");
+
+    const productGrid =
+        document.getElementById("productGrid");
+
+
+    if (!productGrid) {
+        return;
+    }
+
+
+    const searchText =
+        searchElement
+            ? searchElement.value.trim().toLowerCase()
+            : "";
+
+
+    // -------------------------------------------------
+    // যদি কোনো Product না থাকে
+    // -------------------------------------------------
+
+    if (products.length === 0) {
+
+        productGrid.innerHTML = `
+
+            <div
+                class="empty-products"
+                style="
+                    grid-column: 1 / -1;
+                    text-align: center;
+                    padding: 60px 20px;
+                    border: 1px dashed #d9d9d9;
+                    border-radius: 20px;
+                    background: #fafafa;
+                "
+            >
+
+                <div
+                    style="
+                        font-size: 52px;
+                        margin-bottom: 12px;
+                    "
+                >
+                    🛍️
+                </div>
+
+                <h3
+                    style="
+                        margin: 0 0 10px;
+                        font-size: 24px;
+                    "
+                >
+                    এখনো কোনো পণ্য যোগ করা হয়নি
+                </h3>
+
+                <p
+                    style="
+                        margin: 0;
+                        color: #777;
+                        font-size: 15px;
+                    "
+                >
+                    আপনার আসল পণ্যের ছবি, নাম, দাম ও
+                    বিবরণ যোগ করলে এখানে দেখা যাবে।
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    // -------------------------------------------------
+    // Search
+    // -------------------------------------------------
+
+    const filteredProducts =
+        products.filter(product =>
+            product.name
+                .toLowerCase()
+                .includes(searchText)
+        );
+
+
+    // -------------------------------------------------
+    // No Search Result
+    // -------------------------------------------------
+
+    if (filteredProducts.length === 0) {
+
+        productGrid.innerHTML = `
+
+            <div
+                style="
+                    grid-column: 1 / -1;
+                    text-align: center;
+                    padding: 50px 20px;
+                "
+            >
+
+                <div style="font-size: 42px;">
+                    🔍
+                </div>
+
+                <h3>
+                    কোনো পণ্য পাওয়া যায়নি
+                </h3>
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    // -------------------------------------------------
+    // Product Cards
+    // -------------------------------------------------
+
+    productGrid.innerHTML =
+        filteredProducts.map(product => `
+
+            <article class="product">
+
+                <div class="product-img">
+
+                    ${
+                        product.badge
+                            ? `
+                                <span class="badge">
+                                    ${product.badge}
+                                </span>
+                              `
+                            : ""
+                    }
+
+                    <span>
+                        ${product.emoji || "🛍️"}
+                    </span>
+
+                </div>
+
+
+                <div class="product-body">
+
+                    <h3>
+                        ${product.name}
+                    </h3>
+
+
+                    <p>
+                        ${product.desc || ""}
+                    </p>
+
+
+                    <div>
+
+                        <span class="price">
+                            ${money(product.price)}
+                        </span>
+
+                        ${
+                            product.oldPrice
+                                ? `
+                                    <span class="old">
+                                        ${money(product.oldPrice)}
+                                    </span>
+                                  `
+                                : ""
+                        }
+
+                    </div>
+
+
+                    <button
+                        class="btn primary add"
+                        onclick="addToCart(${product.id})"
+                    >
+                        🛒 কার্টে যোগ করুন
+                    </button>
+
+                </div>
+
+            </article>
+
+        `).join("");
+
+}
+
+
+// =====================================================
 // SAVE CART
-// ==========================================
+// =====================================================
 
 function saveCart() {
 
-  localStorage.setItem(
-    "naiemStoreCart",
-    JSON.stringify(cart)
-  );
-
-  displayCart();
-}
-
-
-// ==========================================
-// DISPLAY CART
-// ==========================================
-
-function displayCart() {
-
-  if (!cartItems) return;
-
-  // Cart খালি
-  if (cart.length === 0) {
-
-    cartItems.innerHTML = `
-      <div class="empty-cart">
-
-        <div class="empty-cart-icon">🛒</div>
-
-        <h3>আপনার Cart খালি</h3>
-
-        <p>
-          পণ্য যোগ করলে এখানে দেখা যাবে।
-        </p>
-
-      </div>
-    `;
-
-    if (cartCount) {
-      cartCount.textContent = "0";
-    }
-
-    if (cartTotal) {
-      cartTotal.textContent = "৳0";
-    }
-
-    return;
-  }
-
-
-  let total = 0;
-  let totalQuantity = 0;
-
-
-  cartItems.innerHTML = cart.map(item => {
-
-    const itemTotal =
-      Number(item.price) * Number(item.quantity);
-
-    total += itemTotal;
-    totalQuantity += Number(item.quantity);
-
-
-    return `
-      <div class="cart-item">
-
-        <div class="cart-item-info">
-
-          <h4>${item.name}</h4>
-
-          <p>
-            ৳${Number(item.price).toLocaleString("en-BD")}
-            × ${item.quantity}
-          </p>
-
-        </div>
-
-
-        <div class="cart-item-actions">
-
-          <button
-            onclick="changeQuantity(${item.id}, -1)"
-          >
-            −
-          </button>
-
-          <span>
-            ${item.quantity}
-          </span>
-
-          <button
-            onclick="changeQuantity(${item.id}, 1)"
-          >
-            +
-          </button>
-
-          <button
-            class="remove-cart-item"
-            onclick="removeFromCart(${item.id})"
-          >
-            ✕
-          </button>
-
-        </div>
-
-        <div class="cart-item-total">
-
-          ৳${itemTotal.toLocaleString("en-BD")}
-
-        </div>
-
-      </div>
-    `;
-
-  }).join("");
-
-
-  if (cartCount) {
-    cartCount.textContent = totalQuantity;
-  }
-
-  if (cartTotal) {
-    cartTotal.textContent =
-      `৳${total.toLocaleString("en-BD")}`;
-  }
-}
-
-
-// ==========================================
-// WHATSAPP ORDER
-// ==========================================
-
-function orderViaWhatsApp() {
-
-  // Cart খালি হলে WhatsApp খুলবে না
-  if (cart.length === 0) {
-
-    alert(
-      "আপনার Cart এখনো খালি। আগে কোনো পণ্য Cart-এ যোগ করুন।"
+    localStorage.setItem(
+        "naiemCart",
+        JSON.stringify(cart)
     );
 
-    return;
-  }
+    updateCartCount();
 
-
-  let message =
-    "🛍️ *Naiem Store - New Order*%0A%0A";
-
-
-  message += "📦 *Products:*%0A";
-
-
-  let total = 0;
-
-
-  cart.forEach((item, index) => {
-
-    const itemTotal =
-      Number(item.price) * Number(item.quantity);
-
-    total += itemTotal;
-
-
-    message +=
-      `${index + 1}. ${item.name}%0A` +
-      `   Quantity: ${item.quantity}%0A` +
-      `   Price: ৳${Number(item.price).toLocaleString("en-BD")}%0A` +
-      `   Subtotal: ৳${itemTotal.toLocaleString("en-BD")}%0A%0A`;
-
-  });
-
-
-  message +=
-    `💰 *Total: ৳${total.toLocaleString("en-BD")}*%0A%0A`;
-
-  message +=
-    "🚚 Delivery: ভালুকার মধ্যে FREE DELIVERY%0A";
-
-  message +=
-    "📍 ভালুকার বাইরে Delivery Charge প্রযোজ্য।%0A%0A";
-
-
-  message +=
-    "👤 *Customer Information:*%0A";
-
-  message +=
-    "Name: %0A";
-
-  message +=
-    "Phone: %0A";
-
-  message +=
-    "Address: %0A%0A";
-
-  message +=
-    "💵 Payment: Cash on Delivery";
-
-
-  const whatsappURL =
-    `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
-
-
-  window.open(
-    whatsappURL,
-    "_blank"
-  );
 }
 
 
-// ==========================================
-// SEARCH
-// ==========================================
+// =====================================================
+// ADD TO CART
+// =====================================================
 
-function searchProducts() {
+function addToCart(productId) {
 
-  if (!searchInput) return;
-
-  const searchTerm =
-    searchInput.value
-      .toLowerCase()
-      .trim();
+    const product =
+        products.find(
+            item => item.id === productId
+        );
 
 
-  const filteredProducts =
-    products.filter(product => {
+    // Product না পাওয়া গেলে
+    if (!product) {
 
-      const name =
-        product.name
-          .toLowerCase();
+        alert(
+            "এই পণ্যটি বর্তমানে পাওয়া যাচ্ছে না।"
+        );
 
-      const description =
-        (product.desc || "")
-          .toLowerCase();
+        return;
+    }
 
 
-      return (
-        name.includes(searchTerm) ||
-        description.includes(searchTerm)
-      );
+    // আগে থেকে cart-এ আছে কি না
+    const existingItem =
+        cart.find(
+            item => item.id === productId
+        );
+
+
+    if (existingItem) {
+
+        existingItem.qty += 1;
+
+    } else {
+
+        cart.push({
+
+            id: productId,
+
+            qty: 1
+
+        });
+
+    }
+
+
+    saveCart();
+
+    openCart();
+
+}
+
+
+// =====================================================
+// CHANGE QUANTITY
+// =====================================================
+
+function changeQty(productId, change) {
+
+    const item =
+        cart.find(
+            cartItem => cartItem.id === productId
+        );
+
+
+    if (!item) {
+        return;
+    }
+
+
+    item.qty += change;
+
+
+    // Quantity 0 হলে product remove
+    if (item.qty <= 0) {
+
+        cart =
+            cart.filter(
+                cartItem =>
+                    cartItem.id !== productId
+            );
+
+    }
+
+
+    saveCart();
+
+    renderCart();
+
+}
+
+
+// =====================================================
+// RENDER CART
+// =====================================================
+
+function renderCart() {
+
+    const cartBox =
+        document.getElementById("cartItems");
+
+    const cartTotal =
+        document.getElementById("cartTotal");
+
+
+    if (!cartBox || !cartTotal) {
+        return;
+    }
+
+
+    // -------------------------------------------------
+    // পুরোনো / invalid cart item remove
+    // -------------------------------------------------
+
+    cart =
+        cart.filter(
+            item =>
+                products.some(
+                    product =>
+                        product.id === item.id
+                )
+        );
+
+
+    // -------------------------------------------------
+    // Empty Cart
+    // -------------------------------------------------
+
+    if (cart.length === 0) {
+
+        cartBox.innerHTML = `
+
+            <div
+                style="
+                    text-align: center;
+                    padding: 28px 10px;
+                    color: #666;
+                "
+            >
+
+                <div
+                    style="
+                        font-size: 46px;
+                        margin-bottom: 10px;
+                    "
+                >
+                    🛒
+                </div>
+
+
+                <strong
+                    style="
+                        display: block;
+                        font-size: 19px;
+                        color: #222;
+                        margin-bottom: 6px;
+                    "
+                >
+                    আপনার কার্ট এখনো খালি।
+                </strong>
+
+
+                <p
+                    style="
+                        margin: 0;
+                        font-size: 14px;
+                    "
+                >
+                    পণ্য যোগ করলে এখানে দেখা যাবে।
+                </p>
+
+            </div>
+
+        `;
+
+
+        cartTotal.textContent = "৳0";
+
+        saveCart();
+
+        return;
+    }
+
+
+    // -------------------------------------------------
+    // Cart Items
+    // -------------------------------------------------
+
+    let total = 0;
+
+
+    cartBox.innerHTML =
+        cart.map(item => {
+
+            const product =
+                products.find(
+                    p => p.id === item.id
+                );
+
+
+            if (!product) {
+                return "";
+            }
+
+
+            const subtotal =
+                product.price * item.qty;
+
+
+            total += subtotal;
+
+
+            return `
+
+                <div class="cart-line">
+
+                    <div>
+
+                        <b>
+                            ${product.name}
+                        </b>
+
+                        <br>
+
+                        <span>
+                            ${money(product.price)}
+                            ×
+                            ${item.qty}
+                        </span>
+
+                    </div>
+
+
+                    <div class="qty">
+
+                        <button
+                            onclick="changeQty(
+                                ${product.id},
+                                -1
+                            )"
+                        >
+                            −
+                        </button>
+
+
+                        ${item.qty}
+
+
+                        <button
+                            onclick="changeQty(
+                                ${product.id},
+                                1
+                            )"
+                        >
+                            +
+                        </button>
+
+
+                        <br>
+
+
+                        <b>
+                            ${money(subtotal)}
+                        </b>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }).join("");
+
+
+    cartTotal.textContent =
+        money(total);
+
+}
+
+
+// =====================================================
+// UPDATE CART COUNT
+// =====================================================
+
+function updateCartCount() {
+
+    const cartCount =
+        document.getElementById("cartCount");
+
+
+    if (!cartCount) {
+        return;
+    }
+
+
+    const count =
+        cart.reduce(
+            (total, item) =>
+                total + item.qty,
+            0
+        );
+
+
+    cartCount.textContent =
+        count;
+
+}
+
+
+// =====================================================
+// OPEN CART
+// =====================================================
+
+function openCart() {
+
+    renderCart();
+
+    const cartModal =
+        document.getElementById("cartModal");
+
+
+    if (cartModal) {
+
+        cartModal.classList.add("show");
+
+    }
+
+}
+
+
+// =====================================================
+// CLOSE CART
+// =====================================================
+
+function closeCart() {
+
+    const cartModal =
+        document.getElementById("cartModal");
+
+
+    if (cartModal) {
+
+        cartModal.classList.remove("show");
+
+    }
+
+}
+
+
+// =====================================================
+// WHATSAPP CHECKOUT
+// =====================================================
+
+function checkout() {
+
+    // -------------------------------------------------
+    // Empty cart protection
+    // -------------------------------------------------
+
+    if (cart.length === 0) {
+
+        alert(
+            "আপনার কার্ট এখনো খালি। আগে একটি পণ্য যোগ করুন।"
+        );
+
+        return;
+    }
+
+
+    let total = 0;
+
+
+    const orderLines = [
+
+        "🛒 *Naiem Store — New Order*",
+
+        ""
+
+    ];
+
+
+    // -------------------------------------------------
+    // Products
+    // -------------------------------------------------
+
+    cart.forEach(item => {
+
+        const product =
+            products.find(
+                p => p.id === item.id
+            );
+
+
+        if (!product) {
+            return;
+        }
+
+
+        const subtotal =
+            product.price * item.qty;
+
+
+        total += subtotal;
+
+
+        orderLines.push(
+
+            `• ${product.name} × ${item.qty} = ${money(subtotal)}`
+
+        );
 
     });
 
 
-  displayProducts(filteredProducts);
-}
+    // -------------------------------------------------
+    // Customer information
+    // -------------------------------------------------
 
+    orderLines.push(
 
-// ==========================================
-// CATEGORY FILTER
-// ==========================================
+        "",
 
-function filterProducts() {
+        `💰 *মোট: ${money(total)}*`,
 
-  if (!categoryFilter) return;
+        "🚚 ভালুকার মধ্যে: FREE DELIVERY",
 
-  const category =
-    categoryFilter.value;
+        "",
 
+        "👤 নাম: ",
 
-  if (
-    !category ||
-    category === "all"
-  ) {
+        "📞 ফোন: ",
 
-    displayProducts(products);
+        "📍 ঠিকানা: "
 
-    return;
-  }
-
-
-  const filteredProducts =
-    products.filter(
-      product =>
-        product.category === category
     );
 
 
-  displayProducts(filteredProducts);
-}
+    // -------------------------------------------------
+    // WhatsApp URL
+    // -------------------------------------------------
+
+    const whatsappURL =
+
+        `https://wa.me/${WHATSAPP_NUMBER}` +
+
+        `?text=${encodeURIComponent(
+            orderLines.join("\n")
+        )}`;
 
 
-// ==========================================
-// SEARCH EVENT
-// ==========================================
-
-if (searchInput) {
-
-  searchInput.addEventListener(
-    "input",
-    searchProducts
-  );
-
-}
-
-
-// ==========================================
-// CATEGORY EVENT
-// ==========================================
-
-if (categoryFilter) {
-
-  categoryFilter.addEventListener(
-    "change",
-    filterProducts
-  );
+    window.open(
+        whatsappURL,
+        "_blank"
+    );
 
 }
 
 
-// ==========================================
-// INITIAL LOAD
-// ==========================================
+// =====================================================
+// CONTACT WHATSAPP
+// =====================================================
 
-displayProducts();
-displayCart();
+const contactWhatsApp =
+    document.getElementById(
+        "contactWhatsApp"
+    );
 
 
-// ==========================================
-// MAKE FUNCTIONS AVAILABLE
-// ==========================================
+if (contactWhatsApp) {
 
-window.addToCart = addToCart;
-window.removeFromCart = removeFromCart;
-window.changeQuantity = changeQuantity;
-window.orderViaWhatsApp = orderViaWhatsApp;
-window.searchProducts = searchProducts;
-window.filterProducts = filterProducts;
+    contactWhatsApp.href =
+
+        `https://wa.me/${WHATSAPP_NUMBER}` +
+
+        `?text=${encodeURIComponent(
+            "আসসালামু আলাইকুম, Naiem Store সম্পর্কে জানতে চাই।"
+        )}`;
+
+}
+
+
+// =====================================================
+// YEAR
+// =====================================================
+
+const yearElement =
+    document.getElementById("year");
+
+
+if (yearElement) {
+
+    yearElement.textContent =
+        new Date().getFullYear();
+
+}
+
+
+// =====================================================
+// INITIALIZE WEBSITE
+// =====================================================
+
+renderProducts();
+
+updateCartCount();
+
+
+// =====================================================
+// END
+// =====================================================
